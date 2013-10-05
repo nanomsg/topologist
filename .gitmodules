@@ -1,0 +1,3 @@
+[submodule "quire"]
+	path = quire
+	url = git@github.com:tailhook/quire

@@ -1,0 +1,145 @@
+__meta__:
+  program-name: topologist
+  default-config: /etc/topologist.yaml
+  description: A configuration service implementation
+    for nanoconfig and nanomsg
+
+__types__:
+
+  PairOptions:
+    port: &port !Int
+      min: 1
+      max: 65535
+      description: A TCP port to use for connection. The port is allocated
+        on the bound side
+      default: 0
+    priority: !Int
+      min: 1
+      max: 16
+      default: 8
+      description: The priority for this connection. Useful only on REQ and
+        PUSH sockets. (NN_SNDPRIO nanomsg option)
+    local-addr: !String
+      description: The IPC or INPROC address. Note: topologist doesn't ensure
+        that request origin is in same process, so use INPROC addresses with
+        care. However topologist assumes that local addresses are different
+        on the different host (this assumption may be broken for lightweight
+        virtual machines like LXC)
+    <<: &socket_options
+      linger: !Int
+        min: 0
+        max: 86400000
+        default: 1000
+        description: The socket linger timeout in milliseconds (NN_LINGER
+          nanomsg option)
+      sndbuf: !Int
+        min: 0
+        max: 1Ti
+        default: 128ki
+        description: Size of send buffer (NN_SNDBUF option)
+      rcvbuf: !Int
+        min: 0
+        max: 1Ti
+        default: 128ki
+        description: Size of recv buffer (NN_RCVBUF option)
+      reconnect-interval: !Int
+        min: 1
+        max: 86400000
+        default: 100
+        description: Reconnection interval (NN_RECONNECT_IVL option)
+      reconnect-interval-max: !Int
+        min: 1
+        max: 86400000
+        default: 0
+        description: Max reconnection interval for exponential backoff
+          (NN_RECONNECT_IVL_MAX option)
+    options-for-bind: *socket_options
+    options-for-connect: *socket_options
+    # TODO(tailhook) add other socket options
+
+  NodeGroup:
+    layout: !String
+      description: The name of the layout to use (from "layouts" section)
+    allow-allocations: !Mapping
+      default:
+        __default__: yes
+      key-element: !String
+      value-element: !Bool
+      description: Allow adding new bind addresses on the fly. It's per role
+        mapping with __default__ being default value for the roles not
+        specified explicitly
+    allocate: !Mapping
+      description: List of ip addresses to bind ports at, per-role. This is
+        useful for extern (public) ports. Or for clients which don't have
+        update propagation.
+      key-element: !String
+      value-element: !Array
+        element: !String
+
+  TopologyType: !Enum
+    items:
+    - reqrep
+    - pipeline
+    - pubsub
+    - pair
+    - bus
+    - survey
+
+  Topology:
+    type: !Struct TopologyType
+    layout: !String
+    children: !Array
+      element: !String
+      description: List of groups to build topology from
+    node-hierarchy: !Array
+      element: !String
+      description: List of fields from request that form hierarchy for this
+        topology. Top to bottom order. They are used both: to apply rules to
+        hierarchy and to create names for topology subscriptions.
+
+  ExternSlot:
+    topology: !String
+      description: Topology where extract the slot from
+    slot: !String
+      description: The name of the slot in the topology
+
+  NanomsgAddr:
+    __tags__:
+      Bind: 0
+      Connect: 1
+    __value__: !String
+
+
+server:
+
+  config-addr: !Array
+    element: !Struct NanomsgAddr
+    description: List of addresses to bind using REP socket for
+      name requests
+
+  updates-addr: !Array
+    element: !Struct NanomsgAddr
+    description: List of addresses to bind using PUB socket for sending
+      configuration updates
+
+
+layouts: !Mapping
+  key-element: !String
+  value-element: !Mapping
+    key-element: !String
+    value-element: !Struct PairOptions
+
+
+groups: !Mapping
+  key-element: !String
+  value-element: !Struct NodeGroup
+
+
+topologies: !Mapping
+  key-element: !String
+  value-element: !Struct Topology
+
+external-slots: !Mapping:
+  key-element: !String
+  value-element: !Struct ExternSlot
+
