@@ -1,0 +1,76 @@
+server:
+  config-addr:
+  - !Bind tcp://0.0.0.0:7065
+  updates-addr:
+  - !Bind tcp://0.0.0.0:7066
+
+layouts:
+  cluster:
+    balancer -> worker:
+      port: 10001
+    balancer <- frontend:
+      port: 10006
+
+    gateway_input <- _gateway_in:
+      port: 10002
+    gateway_output -> _gateway_out:
+      port: 10003
+    frontend <- _api:
+      port: 10004
+    gateway_input -> balancer:
+      port: 10007
+    balancer -> gateway_output:
+      # Failover route, note default priority is 8
+      port: 10005
+      priority: 10
+
+  subcluser:
+    _worker -> device:  # port may be omitted if can be deduced by topology
+    device -> worker:
+      addr: ipc:///tmp/device  # note using IPC socket for intra-node messages
+
+  world:
+    _api -> api:
+      port: 2222
+    gateway_in <- gateway_out:
+      skip_ourself: yes
+
+topologies:
+
+  internal: !Topology
+    type: reqrep
+    node-hierarchy:
+      - dc
+      - role
+      - hostname
+      - pid
+    layout: world
+    sub-layouts:
+      ~: cluster
+      first.~.wally: subcluster
+    assign:
+      first.frontend.felicia:
+        host: 127.1.5.1
+      first.frontend.florence:
+        host: 127.1.5.1
+      first.balancer.lisa:
+        host: 127.1.11.1
+      first.balancer.laura:
+        host: 127.1.11.2
+      first.gateway_input.gina:
+        host: 127.1.6.1
+      first.gateway_output.gina:
+        host: 127.1.6.1
+      second.frontend.faith:
+        host: 127.2.5.1
+      second.balancer.lora:
+        host: 127.2.11.1
+      second.gateway_input.gloria:
+        host: 127.2.6.1
+      second.gateway_output.gloria:
+        host: 127.2.6.1
+
+  public: !Extern
+    topology: internal
+    slot: _api
+

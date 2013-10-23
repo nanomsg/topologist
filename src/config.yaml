@@ -6,7 +6,13 @@ __meta__:
 
 __types__:
 
-  PairOptions:
+  nanomsg_addr: !TagScalar
+    tags:
+      Bind: 0
+      Connect: 1
+    type: !String
+
+  pair_options: !Struct
     port: &port !Int
       min: 1
       max: 65535
@@ -57,7 +63,7 @@ __types__:
     options-for-connect: *socket_options
     # TODO(tailhook) add other socket options
 
-  NodeGroup:
+  node_group: !Struct
     layout: !String
       description: The name of the layout to use (from "layouts" section)
     allow-allocations: !Mapping
@@ -76,49 +82,55 @@ __types__:
       value-element: !Array
         element: !String
 
-  TopologyType: !Enum
-    items:
-    - reqrep
-    - pipeline
-    - pubsub
-    - pair
-    - bus
-    - survey
+  assignment: !Struct
+    host: !String
 
-  Topology:
-    type: !Struct TopologyType
+  topology_type: !Enum
+    options:
+      reqrep: 1
+      pipeline: 2
+      pubsub: 3
+      pair: 4
+      bus: 5
+      survey: 6
+
+  intern: !Struct
+    type: !Type topology_type
     layout: !String
-    children: !Array
-      element: !String
-      description: List of groups to build topology from
     node-hierarchy: !Array
       element: !String
       description: List of fields from request that form hierarchy for this
         topology. Top to bottom order. They are used both: to apply rules to
         hierarchy and to create names for topology subscriptions.
+    sub-layouts: !Mapping
+      key-element: !String
+      value-element: !String
+    assign: !Mapping
+      key-element: !String
+      value-element: !Type assignment
 
-  ExternSlot:
+  extern: !Struct
     topology: !String
       description: Topology where extract the slot from
     slot: !String
       description: The name of the slot in the topology
 
-  NanomsgAddr:
-    __tags__:
-      Bind: 0
-      Connect: 1
-    __value__: !String
+  topology: !Choice
+    choices:
+      Extern: !Type extern
+      Topology: !Type intern
+
 
 
 server:
 
   config-addr: !Array
-    element: !Struct NanomsgAddr
+    element: !Type nanomsg_addr
     description: List of addresses to bind using REP socket for
       name requests
 
   updates-addr: !Array
-    element: !Struct NanomsgAddr
+    element: !Type nanomsg_addr
     description: List of addresses to bind using PUB socket for sending
       configuration updates
 
@@ -127,19 +139,9 @@ layouts: !Mapping
   key-element: !String
   value-element: !Mapping
     key-element: !String
-    value-element: !Struct PairOptions
-
-
-groups: !Mapping
-  key-element: !String
-  value-element: !Struct NodeGroup
-
+    value-element: !Type pair_options
 
 topologies: !Mapping
   key-element: !String
-  value-element: !Struct Topology
-
-external-slots: !Mapping:
-  key-element: !String
-  value-element: !Struct ExternSlot
+  value-element: !Type topology
 
