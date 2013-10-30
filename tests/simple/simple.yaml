@@ -1,0 +1,15 @@
+server:
+  config-addr: !Req ipc://.test-config.sock
+  updates-addr: !Pub ipc://.test-updates.sock
+
+layouts:
+  simple:
+    server <- client:
+      port: 10000
+
+topologies:
+  simple: !Topology
+    type: reqrep
+    layout: simple
+    assign:
+      client: 10.254.0.1

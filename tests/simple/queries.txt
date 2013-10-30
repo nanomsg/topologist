@@ -1,0 +1,2 @@
+nanoconfig://simple?role=client NN_REQ
+nanoconfig://simple?role=worker NN_REP

@@ -1,0 +1,14 @@
+<<: !Include config.yaml
+
+cli:
+  query_file: !String
+    command-line:
+      names: [-Q, --query-file]
+      metavar: FILE
+    description: Text file with list of queries
+  output: !String
+    command-line:
+      names: [-o, --output]
+      metavar: FILE
+    description: File name to write query results to
+    default: "-"
