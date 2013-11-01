@@ -1,20 +1,49 @@
+#include <assert.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 
-#include "infoconfig.h"
+#include "query.h"
+#include "build.h"
+#include "config.h"
 
 static void query_topology(struct cfg_main *cfg) {
-    if(cfg->cli.output && strcmp(cfg->cli.output, "-")) {
-        FILE *f = fopen(cfg->cli.output, "w");
+    struct graph *g = graph_build(cfg);
+    if(!g) {
+        fprintf(stderr, "topology: Not enough memory to build graph");
+        exit(1);
+    }
+    if(cfg->output && strcmp(cfg->output, "-")) {
+        FILE *f = fopen(cfg->output, "w");
         if(!f) {
             fprintf(stderr, "Error opening file \"%s\": %s",
-                cfg->cli.output, strerror(errno));
+                cfg->output, strerror(errno));
             exit(1);
         }
         stdout = f;
     }
-    if(cfg->cli.query_file) {
+    if(cfg->query_file) {
+        char linebuf[4096];
+        FILE *inp = fopen(cfg->query_file, "r");
+
+        if(!inp) {
+            fprintf(stderr, "Error opening file \"%s\": %s",
+                cfg->output, strerror(errno));
+            exit(1);
+        }
+
+        while(fgets(linebuf, sizeof(linebuf)-1, inp)) {
+            char *space = strchr(linebuf, ' ');
+            if(!space) {
+                fprintf(stderr, "Wrong query ``%s''\n", linebuf);
+                continue;
+            }
+            *space++ = 0;
+            //execute_query(cfg, linebuf, space);
+        }
+
+        fclose(inp);
+
     }
     fclose(stdout);
 }

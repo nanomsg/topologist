@@ -1,12 +1,19 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)  # feel free to try lower
 PROJECT(topologist)
 
+SET(common_files
+    src/build.c
+    src/hash_tables.c
+    )
+
 ADD_EXECUTABLE(topologist
+    ${common_files}
     src/main.c
     config.c)
 ADD_EXECUTABLE(topology
+    ${common_files}
     src/info.c
-    infoconfig.c)
+    config.c)
 
 ADD_SUBDIRECTORY(quire)
 GET_TARGET_PROPERTY(QUIRE_GEN quire-gen LOCATION)
@@ -22,27 +29,12 @@ SET_SOURCE_FILES_PROPERTIES(
     config.h config.c
     PROPERTIES GENERATED 1
     )
-SET_SOURCE_FILES_PROPERTIES(
-    src/main.c
-    COMPILE_FLAGS "-I${CMAKE_CURRENT_BINARY_DIR}")
 TARGET_LINK_LIBRARIES(topologist quire)
 INCLUDE_DIRECTORIES(BEFORE SYSTEM quire/include)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
-ADD_CUSTOM_COMMAND(
-    OUTPUT infoconfig.h infoconfig.c
-    COMMAND ${QUIRE_GEN}
-        --source ${CMAKE_CURRENT_SOURCE_DIR}/src/infoconfig.yaml
-        --c-header infoconfig.h
-        --c-source infoconfig.c
-    DEPENDS src/infoconfig.yaml quire-gen
-    )
-SET_SOURCE_FILES_PROPERTIES(
-    infoconfig.h infoconfig.c
-    PROPERTIES GENERATED 1
-    )
-SET_SOURCE_FILES_PROPERTIES(
-    src/info.c
-    COMPILE_FLAGS "-I${CMAKE_CURRENT_BINARY_DIR}")
+SET_TARGET_PROPERTIES(topology PROPERTIES
+    COMPILE_FLAGS "-DCOMMAND_LINE")
 TARGET_LINK_LIBRARIES(topology quire)
 
 IF(ASTYLE)
@@ -57,18 +49,6 @@ IF(ASTYLE)
         PRE_BUILD
         COMMAND ${ASTYLE} -Y config.h
         DEPENDS config.h
-        )
-    ADD_CUSTOM_COMMAND(
-        TARGET topology
-        PRE_BUILD
-        COMMAND ${ASTYLE} -Y infoconfig.c
-        DEPENDS infoconfig.c
-        )
-    ADD_CUSTOM_COMMAND(
-        TARGET topology
-        PRE_BUILD
-        COMMAND ${ASTYLE} -Y infoconfig.h
-        DEPENDS infoconfig.h
         )
 ENDIF()
 

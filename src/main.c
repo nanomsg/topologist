@@ -1,7 +1,14 @@
-#include "config.h"
+#include <assert.h>
 
-static void run_program(struct cfg_main *cfg) {
-    printf("The test program is doing nothing right now!\n");
+#include "config.h"
+#include "build.h"
+
+static void run_service(struct cfg_main *cfg) {
+    struct graph *g = graph_build(cfg);
+    if(!g) {
+        fprintf(stderr, "topology: Not enough memory to build graph");
+        exit(1);
+    }
 }
 
 int main(int argc, char **argv) {
@@ -10,7 +17,7 @@ int main(int argc, char **argv) {
 
     rc = cfg_load(&cfg, argc, argv);
     if(rc == 0) {
-        run_program(&cfg);
+        run_service(&cfg);
     }
     cfg_free(&cfg);
 

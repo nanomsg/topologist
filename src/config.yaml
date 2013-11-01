@@ -63,25 +63,6 @@ __types__:
     options-for-connect: *socket_options
     # TODO(tailhook) add other socket options
 
-  node_group: !Struct
-    layout: !String
-      description: The name of the layout to use (from "layouts" section)
-    allow-allocations: !Mapping
-      default:
-        __default__: yes
-      key-element: !String
-      value-element: !Bool
-      description: Allow adding new bind addresses on the fly. It's per role
-        mapping with __default__ being default value for the roles not
-        specified explicitly
-    allocate: !Mapping
-      description: List of ip addresses to bind ports at, per-role. This is
-        useful for extern (public) ports. Or for clients which don't have
-        update propagation.
-      key-element: !String
-      value-element: !Array
-        element: !String
-
   assignment: !Struct
     host: !String
 
@@ -145,3 +126,24 @@ topologies: !Mapping
   key-element: !String
   value-element: !Type topology
 
+
+__if__:defined COMMAND_LINE:
+  query_file: !String
+    only-command-line: true
+    command-line:
+      names: [-Q, --query-file]
+      metavar: FILE
+    description: Text file with list of queries
+  graph: !String
+    only-command-line: true
+    command-line:
+      names: [-G, --graph-for-topology]
+      metavar: TOPOLOGY
+    description: Prints dot-formatted graph for the topology
+  output: !String
+    only-command-line: true
+    command-line:
+      names: [-o, --output]
+      metavar: FILE
+    description: File name to write query results to
+    default: "-"
