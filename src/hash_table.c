@@ -68,7 +68,7 @@ int HT_NAME(_set)(HT_STRUCT *table,
 {
     int rc;
     uint32_t hash = HT_HASH_FUNC(key);
-    static struct HT_NAME(_entry) *entry;
+    struct HT_NAME(_entry) *entry;
     entry = HT_NAME(_find)( table, hash, key);
     if(entry) {
         /*  Key already in the table, just replace the value  */

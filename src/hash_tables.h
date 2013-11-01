@@ -28,6 +28,17 @@ struct topology;
 
 HASH_TABLE_STRUCT(topht, const char *, struct topology *);
 void topht_init(struct topht *table);
+int topht_set(struct topht *table, const char *key, struct topology *value);
+struct topology *topht_get(struct topht *table, const char *key);
 void topht_free(struct topht *table);
+
+
+struct role_rules;
+
+HASH_TABLE_STRUCT(roleht, const char *, struct role_rules *);
+void roleht_init(struct roleht *table);
+int roleht_set(struct roleht *table, const char *key, struct role_rules *value);
+struct role_rules *roleht_get(struct roleht *table, const char *key);
+void roleht_free(struct roleht *table);
 
 #endif  /*  H_HASH_TABLES  */

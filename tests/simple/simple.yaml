@@ -12,4 +12,4 @@ topologies:
     type: reqrep
     layout: simple
     assign:
-      client: 10.254.0.1
+      server: 10.254.0.1

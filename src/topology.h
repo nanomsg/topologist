@@ -3,7 +3,11 @@
 
 #include "hash_tables.h"
 
+struct role_rules {
+};
+
 struct topology {
+    struct roleht roles;
 };
 
 struct graph {
