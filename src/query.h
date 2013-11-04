@@ -8,6 +8,7 @@
 struct query {
     char topology[65];
     char role[25];
+    int is_source:1;
     int socket_type;
 };
 

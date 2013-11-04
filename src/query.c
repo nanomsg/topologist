@@ -10,11 +10,12 @@ const int min_request_size = 8 /* strlen("RESOLVE ") */ +
 
 static struct socket_type {
     const char *name;
+    int is_source;
     int sock_type;
 } socket_types[] = {
-    {"NN_REQ", NN_REQ},
-    {"NN_REP", NN_REP},
-    {NULL, 0}
+    {"NN_REQ", 1, NN_REQ},
+    {"NN_REP", 0, NN_REP},
+    {NULL, 0, 0}
 };
 
 static int query_url_parse(struct query_context *ctx,
@@ -115,11 +116,14 @@ static int query_parse(struct query_context *ctx, const char *q, int qlen)
     }
 
     int type = 0;
+    int is_source = -1;
     const struct socket_type *typ;
     for(typ = socket_types; typ->name; ++typ) {
         if((int)strlen(typ->name) == socktypelen &&
             !strncmp(typ->name, socktype, socktypelen)) {
+            is_source = typ->is_source;
             type = typ->sock_type;
+            break;
         }
     }
     if(type == 0) {
@@ -129,7 +133,15 @@ static int query_parse(struct query_context *ctx, const char *q, int qlen)
     }
     struct query *self = &ctx->query;
     self->socket_type = type;
+    self->is_source = is_source;
     return query_url_parse(ctx, self, urlstart, urlend-urlstart);
+}
+
+static int rrules_resolve(struct query_context *ctx, struct query *query,
+    struct role_rules *rr, const char **result, int *resultlen)
+{
+    (void) ctx; (void) query; (void) result; (void) resultlen; (void) rr;
+    return 0;
 }
 
 int execute_query(struct query_context *ctx, struct graph *g,
@@ -139,5 +151,18 @@ int execute_query(struct query_context *ctx, struct graph *g,
     err_init(&ctx->err);
     if(!query_parse(ctx, query, querylen))
         return 0;
-    return 0;
+    struct query *q = &ctx->query;
+
+    struct topology *top = topht_get(&g->topologies, q->topology);
+    if(!top) {
+        err_add_fatal(&ctx->err, "Topology \"%s\" not found",
+            q->topology);
+        return 0;
+    }
+    struct role *role = roleht_get(&top->roles, q->role);
+    struct role_rules *rules = &role->source_rules;
+    if(!q->is_source) {
+        rules = &role->sink_rules;
+    }
+    return rrules_resolve(ctx, q, rules, result, resultlen);
 }
