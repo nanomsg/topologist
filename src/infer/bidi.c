@@ -28,7 +28,7 @@ struct topology *infer_bidi_topology(
         } else if(sscanf(conn->key, "%24s <- %24s", bindrole, connrole) == 2) {
             source = 1;
         } else {
-            inf_report_error(ctx, "Bad layout rule \"%s\"\n", conn->key);
+            err_add_fatal(&ctx->err, "Bad layout rule \"%s\"\n", conn->key);
             continue;
         }
 
@@ -67,7 +67,9 @@ struct topology *infer_bidi_topology(
     for(roleass = def->assign; roleass; roleass = roleass->next) {
         struct role *role = roleht_get(&self->roles, roleass->key);
         if(!role) {
-            inf_report_error(ctx, "Assignment for the wrong role");
+            err_add_fatal(&ctx->err,
+                "Assignment for non-existent role \"%s\"\n",
+                roleass->key);
             continue;
         }
 

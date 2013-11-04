@@ -4,6 +4,8 @@ PROJECT(topologist)
 SET(common_files
     src/hash_tables.c
 
+    src/error.c
+    src/query.c
     src/build.c
     src/infer/common.c
     src/infer/utils.c

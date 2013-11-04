@@ -3,15 +3,7 @@
 #include <string.h>
 
 #include "utils.h"
-
-void inf_report_error(struct inf_context *ctx, const char *fmt, ...)
-{
-    (void) ctx;  /* Build context */
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
-    va_end(args);
-}
+#include "../error.h"
 
 struct cfg_m_str_m_str_pair_options *inf_get_layout(
     struct inf_context *ctx, const char *n)
@@ -21,6 +13,6 @@ struct cfg_m_str_m_str_pair_options *inf_get_layout(
         if(!strcmp(iter->key, n))
             return iter;
     }
-    inf_report_error(ctx, "Bad layout name \"%s\"\n", n);
+    err_add_fatal(&ctx->err, "Bad layout name \"%s\"\n", n);
     return NULL;
 }

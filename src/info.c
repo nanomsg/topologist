@@ -23,6 +23,8 @@ static void query_topology(struct cfg_main *cfg) {
         stdout = f;
     }
     if(cfg->query_file) {
+        const char *databuf;
+        int datalen;
         char linebuf[4096];
         FILE *inp = fopen(cfg->query_file, "r");
 
@@ -33,13 +35,17 @@ static void query_topology(struct cfg_main *cfg) {
         }
 
         while(fgets(linebuf, sizeof(linebuf)-1, inp)) {
-            char *space = strchr(linebuf, ' ');
-            if(!space) {
-                fprintf(stderr, "Wrong query ``%s''\n", linebuf);
+            struct query_context ctx;
+            int len = strlen(linebuf);
+            if(linebuf[len] == '\n')
+                --len;
+            if(!execute_query(&ctx, g, linebuf, len, &databuf, &datalen)) {
+                err_print(&ctx.err, stderr);
                 continue;
             }
-            *space++ = 0;
-            //execute_query(cfg, linebuf, space);
+            /*  TODO(tailhook) print result  */
+            printf("GOT RESULT %d bytes\n", datalen);
+            free((void *)databuf);
         }
 
         fclose(inp);
