@@ -2,8 +2,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)  # feel free to try lower
 PROJECT(topologist)
 
 SET(common_files
-    src/build.c
     src/hash_tables.c
+    src/build.c
+    src/infer/common.c
+    src/infer/utils.c
+    src/infer/bus.c
+    src/infer/bidi.c
+    src/infer/extern.c
     )
 
 ADD_EXECUTABLE(topologist
