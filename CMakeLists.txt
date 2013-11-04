@@ -7,6 +7,7 @@ SET(common_files
     src/error.c
     src/query.c
     src/build.c
+    src/topology.c
     src/infer/common.c
     src/infer/utils.c
     src/infer/roles.c

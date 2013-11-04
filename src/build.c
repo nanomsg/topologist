@@ -10,16 +10,18 @@
 #include "infer/bus.h"
 #include "infer/extern.h"
 
-struct graph *graph_build(struct cfg_main *cfg) {
+struct graph *graph_build(struct cfg_main *cfg, struct errbuf *err) {
     struct graph *self = malloc(sizeof(struct graph));
     if(!self)
         return NULL;
     topht_init(&self->topologies);
 
+    struct inf_context ctx;
+    err_init(&ctx.err);
+    ctx.layouts = cfg->layouts;
+
     struct cfg_m_str_topology *iter;
     for(iter = cfg->topologies; iter; iter = iter->next) {
-        struct inf_context ctx;
-        ctx.layouts = cfg->layouts;
         struct topology *topology = NULL;
         switch(iter->val->any.tag) {
         case CFG_TOPOLOGY_TOPOLOGY:
@@ -34,28 +36,41 @@ struct graph *graph_build(struct cfg_main *cfg) {
                 topology = infer_bus_topology(&iter->val->Topology.val, &ctx);
                 break;
             case CFG_TOPOLOGY_TYPE_PAIR:
-                fprintf(stderr, "The pair topology is not supported yet\n");
-                abort();
+                err_add_fatal(&ctx.err,
+                    "The pair topology is not supported yet\n");
+                break;
             default:
-                fprintf(stderr, "Topologies type is not supported\n");
-                abort();
+                err_add_fatal(&ctx.err,
+                    "Unsupported topology type\n");
+                break;
             }
             break;
         case CFG_TOPOLOGY_EXTERN:
             topology = infer_extern_topology(&iter->val->Extern.val, &ctx);
             break;
         default:
-            fprintf(stderr, "Wrong topology kind\n");
-            abort();
+            err_add_fatal(&ctx.err,
+                "Unsupported topology kind\n");
+            break;
         }
-        if(topology)
-            topht_set(&self->topologies, iter->key, topology);
+        if(topht_get(&self->topologies, iter->key)) {
+            err_add_fatal(&ctx.err, "Duplicate topology \"%s\"\n", iter->key);
+        }
+        if(ctx.err.fatal) {
+            if(topology)
+                topology_free(topology);
+        }
+        if(topht_set(&self->topologies, iter->key, topology) < 0) {
+            graph_free(self);
+            return NULL;
+        }
     }
 
+    memcpy(err, &ctx.err,  sizeof(struct errbuf));
     return self;
 }
 
 void graph_free(struct graph *self) {
-    topht_free(&self->topologies);
+    topht_free(&self->topologies, topology_free);
     free(self);
 }

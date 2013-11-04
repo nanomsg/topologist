@@ -1,4 +1,5 @@
 #include <malloc.h>
+#include <string.h>
 
 #include "bidi.h"
 #include "utils.h"
@@ -9,14 +10,14 @@
 struct topology *infer_bidi_topology(
     struct cfg_intern *def, struct inf_context *ctx)
 {
-    struct topology *self = malloc(sizeof(struct topology));
     struct cfg_m_str_m_str_pair_options *layout;
     layout = inf_get_layout(ctx, def->layout);
     if(!layout) {
-        free(self);
         return NULL;
     }
-    roleht_init(&self->roles);
+    struct topology *self = topology_new();
+    if(!self)
+        return NULL;
 
     struct cfg_m_str_pair_options *conn;
     for(conn = layout->val; conn; conn = conn->next) {
@@ -35,19 +36,29 @@ struct topology *infer_bidi_topology(
         struct role *bindr = roleht_get(&self->roles, bindrole);
         if(!bindr) {
             bindr = malloc(sizeof(struct role));
-            bindr->name = bindrole;
+            if(!bindr)
+                goto memory_error;
+            memcpy(bindr->name, bindrole, sizeof(bindrole));
             rrules_init(&bindr->source_rules);
             rrules_init(&bindr->sink_rules);
-            roleht_set(&self->roles, bindrole, bindr);
+            if(roleht_set(&self->roles, bindr->name, bindr) < 0) {
+                free(bindr);
+                goto memory_error;
+            }
         }
 
-        struct role *connr = roleht_get(&self->roles, bindrole);
+        struct role *connr = roleht_get(&self->roles, connrole);
         if(!connr) {
             connr = malloc(sizeof(struct role));
-            connr->name = connrole;
+            if(!connr)
+                goto memory_error;
+            memcpy(connr->name, connrole, sizeof(connrole));
             rrules_init(&connr->source_rules);
             rrules_init(&connr->sink_rules);
-            roleht_set(&self->roles, connrole, connr);
+            if(roleht_set(&self->roles, connr->name, connr) < 0) {
+                free(connr);
+                goto memory_error;
+            }
         }
 
         struct role_endpoint *ep1;
@@ -75,11 +86,15 @@ struct topology *infer_bidi_topology(
 
         struct cfg_a_assignment *ass;
         for(ass = roleass->val; ass; ass = ass->next) {
-            role_add_assign(role, &ass->val);
+            if(role_add_assign(role, &ass->val) < 0)
+                goto memory_error;
         }
     }
 
     /* TODO(tailhook) check that all endpoints to bind are assigned */
 
     return self;
+memory_error:
+    topology_free(self);
+    return NULL;
 }

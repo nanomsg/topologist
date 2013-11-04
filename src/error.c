@@ -39,5 +39,7 @@ void err_add_warning(struct errbuf *buf, const char *fmt, ...) {
 }
 
 void err_print(struct errbuf *self, FILE *stream) {
+    if(self->empty)
+        return;
     fputs(self->buf, stream);
 }

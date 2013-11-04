@@ -23,7 +23,7 @@ static int query_url_parse(struct query_context *ctx,
                            const char *url, int urllen)
 {
     /* Url starts by "nanoconfig://" it's enforced in query_parse */
-    const char *topname = url + 14 /* strlen("nanoconfig://" */;
+    const char *topname = url + 13 /* strlen("nanoconfig://") */;
     const char *urlend = url + urllen;
     const char *qstr = memchr(topname, '?', urlend - topname);
     if(!qstr) {
@@ -61,7 +61,7 @@ static int query_url_parse(struct query_context *ctx,
         char *target = NULL;
         int maxlen = 0;
 
-        if(eq - qstr == 4 /* strlen("role") */ && memcmp(qstr, "role", 4)) {
+        if(eq - qstr == 4 /* strlen("role") */ && !memcmp(qstr, "role", 4)) {
             target = self->role;
             maxlen = 24;
         }
@@ -100,7 +100,8 @@ static int query_parse(struct query_context *ctx, const char *q, int qlen)
     }
     const char *urlstart = q + 8;
     const char *urlend = memchr(urlstart, ' ', qend - urlstart);
-    if(memcmp("nanoconfig://", urlstart, 14)) {
+    if(memcmp("nanoconfig://", urlstart, 13)) {
+        fprintf(stderr, "URLSTART \"%s\"\n", urlstart);
         err_add_fatal(&ctx->err, "Url must start with nanoconfig://");
         return 0;
     }

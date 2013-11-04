@@ -2,13 +2,22 @@
 #include <stdlib.h>
 
 #include "config.h"
+#include "error.h"
 #include "build.h"
 
 static void run_service(struct cfg_main *cfg) {
-    struct graph *g = graph_build(cfg);
+    struct errbuf err;
+    struct graph *g = graph_build(cfg, &err);
     if(!g) {
         fprintf(stderr, "topology: Not enough memory to build graph");
         exit(1);
+    }
+    if(!err.empty) {
+        err_print(&err, stderr);
+        if(err.fatal) {
+            graph_free(g);
+            exit(1);
+        }
     }
 }
 

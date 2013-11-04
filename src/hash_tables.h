@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include "hints.h"
 
 /*  Abstract macros  */
 
@@ -29,17 +30,19 @@ struct topology;
 
 HASH_TABLE_STRUCT(topht, const char *, struct topology *);
 void topht_init(struct topht *table);
-int topht_set(struct topht *table, const char *key, struct topology *value);
+int topht_set(struct topht *table, const char *key, struct topology *value)
+    TT_USE_RESULT;
 struct topology *topht_get(struct topht *table, const char *key);
-void topht_free(struct topht *table);
+void topht_free(struct topht *table, void (*free_elm)(struct topology *));
 
 
 struct role;
 
 HASH_TABLE_STRUCT(roleht, const char *, struct role *);
 void roleht_init(struct roleht *table);
-int roleht_set(struct roleht *table, const char *key, struct role *value);
+int roleht_set(struct roleht *table, const char *key, struct role *value)
+    TT_USE_RESULT;
 struct role *roleht_get(struct roleht *table, const char *key);
-void roleht_free(struct roleht *table);
+void roleht_free(struct roleht *table, void (*free_elm)(struct role *));
 
 #endif  /*  H_HASH_TABLES  */

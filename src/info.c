@@ -8,10 +8,18 @@
 #include "config.h"
 
 static void query_topology(struct cfg_main *cfg) {
-    struct graph *g = graph_build(cfg);
+    struct errbuf err;
+    struct graph *g = graph_build(cfg, &err);
     if(!g) {
         fprintf(stderr, "topology: Not enough memory to build graph");
         exit(1);
+    }
+    if(!err.empty) {
+        err_print(&err, stderr);
+        if(err.fatal) {
+            graph_free(g);
+            exit(1);
+        }
     }
     if(cfg->output && strcmp(cfg->output, "-")) {
         FILE *f = fopen(cfg->output, "w");
@@ -37,7 +45,7 @@ static void query_topology(struct cfg_main *cfg) {
         while(fgets(linebuf, sizeof(linebuf)-1, inp)) {
             struct query_context ctx;
             int len = strlen(linebuf);
-            if(linebuf[len] == '\n')
+            if(linebuf[len-1] == '\n')
                 --len;
             if(!execute_query(&ctx, g, linebuf, len, &databuf, &datalen)) {
                 err_print(&ctx.err, stderr);
@@ -52,6 +60,7 @@ static void query_topology(struct cfg_main *cfg) {
 
     }
     fclose(stdout);
+    graph_free(g);
 }
 
 int main(int argc, char **argv) {

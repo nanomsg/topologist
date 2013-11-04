@@ -7,7 +7,24 @@ void HT_NAME(_init)(HT_STRUCT *table) {
     memset(table->dense, 0, sizeof(table->dense));
 }
 
-void HT_NAME(_free)(HT_STRUCT *table) {
+void HT_NAME(_free)(HT_STRUCT *table, void (*free_elm)(HT_VALUE_TYPE elm)) {
+    uint32_t i;
+    struct HT_NAME(_entry) *tab;
+    uint32_t tsize = 1 << table->table_size;
+
+    if(free_elm) {
+        if(table->table) {
+            tab = table->table;
+        } else {
+            tab = table->dense;
+        }
+        for(i = 0; i < tsize; ++i) {
+            if(tab[i].hash) {
+                free_elm(tab[i].value);
+            }
+        }
+    }
+
     if(table->table)
         free(table);
 }
@@ -28,11 +45,12 @@ static struct HT_NAME(_entry) *HT_NAME(_find)(HT_STRUCT *table,
 
     uint32_t cell = hash;
     for(i = 0;; ++i) {
-        cell += i;
-        e = &tab[cell & tmask];
+        cell = (cell + i) & tmask;
+        e = &tab[cell];
         if(!e->hash || (e->hash == hash && HT_KEY_COMPARE(e->key, key)))
             return e;
     }
+    abort();
 }
 
 int HT_NAME(_resize)(HT_STRUCT *table, size_t newsize) {
@@ -49,7 +67,7 @@ int HT_NAME(_resize)(HT_STRUCT *table, size_t newsize) {
     if(!table->table)
         return -ENOMEM;
     table->table_size = newsize;
-    memset(table->table, 0, sizeof(table->dense));
+    memset(table->table, 0, newsize*sizeof(*otab));
 
     while(entry > otab) {
         nentry = HT_NAME(_find)(table, entry->hash, entry->key);
@@ -63,21 +81,20 @@ int HT_NAME(_resize)(HT_STRUCT *table, size_t newsize) {
     return 0;
 }
 
-int HT_NAME(_set)(HT_STRUCT *table,
-    HT_KEY_TYPE key, HT_VALUE_TYPE val)
+int HT_NAME(_set)(HT_STRUCT *table, HT_KEY_TYPE key, HT_VALUE_TYPE val)
 {
     int rc;
     uint32_t hash = HT_HASH_FUNC(key);
     struct HT_NAME(_entry) *entry;
     entry = HT_NAME(_find)( table, hash, key);
-    if(entry) {
+    if(entry->hash) {
         /*  Key already in the table, just replace the value  */
         entry->value = val;
         return 0;
     }
     size_t tsize = table->table_size;
     table->len += 1;
-    if((tsize * 3 / 4) < table->len) {
+    if((tsize * 3 / 4) > table->len) {
         entry->hash = hash;
         entry->key = key;
         entry->value = val;
