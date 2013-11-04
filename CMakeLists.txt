@@ -3,9 +3,12 @@ PROJECT(topologist)
 
 SET(common_files
     src/hash_tables.c
+
     src/build.c
     src/infer/common.c
     src/infer/utils.c
+    src/infer/roles.c
+
     src/infer/bus.c
     src/infer/bidi.c
     src/infer/extern.c

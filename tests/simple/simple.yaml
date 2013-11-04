@@ -12,4 +12,5 @@ topologies:
     type: reqrep
     layout: simple
     assign:
-      server: 10.254.0.1
+      server:
+      - host: 10.254.0.1

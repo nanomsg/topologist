@@ -45,7 +45,7 @@ static uint32_t string_hash(const char *val) {
 #define HT_KEY_TYPE const char *
 #define HT_HASH_FUNC string_hash
 #define HT_KEY_COMPARE !strcmp
-#define HT_VALUE_TYPE struct role_rules *
+#define HT_VALUE_TYPE struct role *
 #define HT_VALUE_NOTHING NULL
 
 #include "hash_table.c"

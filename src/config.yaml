@@ -59,8 +59,8 @@ __types__:
         default: 0
         description: Max reconnection interval for exponential backoff
           (NN_RECONNECT_IVL_MAX option)
-    options-for-bind: *socket_options
-    options-for-connect: *socket_options
+    # options-for-bind: *socket_options
+    # options-for-connect: *socket_options
     # TODO(tailhook) add other socket options
 
   assignment: !Struct
@@ -88,7 +88,8 @@ __types__:
       value-element: !String
     assign: !Mapping
       key-element: !String
-      value-element: !Type assignment
+      value-element: !Array
+        element: !Type assignment
 
   extern: !Struct
     topology: !String

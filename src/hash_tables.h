@@ -2,6 +2,7 @@
 #define H_HASH_TABLES
 
 #include <stdint.h>
+#include <stdlib.h>
 
 /*  Abstract macros  */
 
@@ -33,12 +34,12 @@ struct topology *topht_get(struct topht *table, const char *key);
 void topht_free(struct topht *table);
 
 
-struct role_rules;
+struct role;
 
-HASH_TABLE_STRUCT(roleht, const char *, struct role_rules *);
+HASH_TABLE_STRUCT(roleht, const char *, struct role *);
 void roleht_init(struct roleht *table);
-int roleht_set(struct roleht *table, const char *key, struct role_rules *value);
-struct role_rules *roleht_get(struct roleht *table, const char *key);
+int roleht_set(struct roleht *table, const char *key, struct role *value);
+struct role *roleht_get(struct roleht *table, const char *key);
 void roleht_free(struct roleht *table);
 
 #endif  /*  H_HASH_TABLES  */
