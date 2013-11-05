@@ -1,2 +1,2 @@
 RESOLVE nanoconfig://simple?role=client NN_REQ
-RESOLVE nanoconfig://simple?role=worker NN_REP
+RESOLVE nanoconfig://simple?role=server NN_REP

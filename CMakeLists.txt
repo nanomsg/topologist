@@ -15,6 +15,8 @@ SET(common_files
     src/infer/bus.c
     src/infer/bidi.c
     src/infer/extern.c
+
+    src/mpack.c
     )
 
 ADD_EXECUTABLE(topologist
@@ -24,6 +26,7 @@ ADD_EXECUTABLE(topologist
 ADD_EXECUTABLE(topology
     ${common_files}
     src/info.c
+    src/munpack.c
     config.c)
 
 ADD_SUBDIRECTORY(quire)

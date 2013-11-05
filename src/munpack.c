@@ -23,7 +23,7 @@
 #include <endian.h>
 #include <stdint.h>
 
-int nc_mp_parse_int (char **pbuf, int *plen, int *result) {
+int mp_parse_int (char **pbuf, int *plen, int *result) {
     char *buf;
     int len;
     unsigned char marker;
@@ -96,7 +96,7 @@ int nc_mp_parse_int (char **pbuf, int *plen, int *result) {
     return 1;
 }
 
-int nc_mp_parse_string (char **pbuf, int *plen, char **result, int *reslen) {
+int mp_parse_string (char **pbuf, int *plen, char **result, int *reslen) {
     char *buf;
     int len;
     int strlen;
@@ -150,7 +150,7 @@ int nc_mp_parse_string (char **pbuf, int *plen, char **result, int *reslen) {
     return 1;
 }
 
-int nc_mp_parse_array (char **pbuf, int *plen, int *arrlen) {
+int mp_parse_array (char **pbuf, int *plen, int *arrlen) {
     char *buf;
     int len;
     unsigned char marker;
@@ -192,7 +192,7 @@ int nc_mp_parse_array (char **pbuf, int *plen, int *arrlen) {
     return 1;
 }
 
-int nc_mp_parse_mapping (char **pbuf, int *plen, int *maplen) {
+int mp_parse_mapping (char **pbuf, int *plen, int *maplen) {
     char *buf;
     int len;
     unsigned char marker;
@@ -234,7 +234,7 @@ int nc_mp_parse_mapping (char **pbuf, int *plen, int *maplen) {
     return 1;
 }
 
-int nc_mp_skip_value (char **pbuf, int *plen) {
+int mp_skip_value (char **pbuf, int *plen) {
     char *buf;
     int len;
     unsigned char marker;
@@ -256,15 +256,15 @@ int nc_mp_skip_value (char **pbuf, int *plen) {
     } else if (marker >= 0x80 && marker <= 0x8F) {  /*  fixmapping  */
         maplen = marker & 0x0F;
         for (i = 0; i < maplen; ++i) {
-            if (!nc_mp_skip_value (&buf, &len))  /*  key  */
+            if (!mp_skip_value (&buf, &len))  /*  key  */
                 return 0;
-            if (!nc_mp_skip_value (&buf, &len))  /*  value  */
+            if (!mp_skip_value (&buf, &len))  /*  value  */
                 return 0;
         }
     } else if (marker >= 0x90 && marker <= 0x9F) {  /*  fixarray  */
         arrlen = marker & 0x0F;
         for (i = 0; i < arrlen; ++i) {
-            if (!nc_mp_skip_value (&buf, &len))
+            if (!mp_skip_value (&buf, &len))
                 return 0;
         }
     } else if (marker >= 0xA0 && marker <= 0xBF) {  /*  fixstr  */
@@ -366,7 +366,7 @@ int nc_mp_skip_value (char **pbuf, int *plen) {
             len -= 2;
             buf += 2;
             for (i = 0; i < arrlen; ++i) {
-                if (!nc_mp_skip_value (&buf, &len))
+                if (!mp_skip_value (&buf, &len))
                     return 0;
             }
             break;
@@ -377,7 +377,7 @@ int nc_mp_skip_value (char **pbuf, int *plen) {
             len -= 4;
             buf += 4;
             for (i = 0; i < arrlen; ++i) {
-                if (!nc_mp_skip_value (&buf, &len))
+                if (!mp_skip_value (&buf, &len))
                     return 0;
             }
             break;
@@ -388,9 +388,9 @@ int nc_mp_skip_value (char **pbuf, int *plen) {
             len -= 2;
             buf += 2;
             for (i = 0; i < maplen; ++i) {
-                if (!nc_mp_skip_value (&buf, &len))  /*  key  */
+                if (!mp_skip_value (&buf, &len))  /*  key  */
                     return 0;
-                if (!nc_mp_skip_value (&buf, &len))  /*  value  */
+                if (!mp_skip_value (&buf, &len))  /*  value  */
                     return 0;
             }
             break;
@@ -401,9 +401,9 @@ int nc_mp_skip_value (char **pbuf, int *plen) {
             len -= 4;
             buf += 4;
             for (i = 0; i < maplen; ++i) {
-                if (!nc_mp_skip_value (&buf, &len))  /*  key  */
+                if (!mp_skip_value (&buf, &len))  /*  key  */
                     return 0;
-                if (!nc_mp_skip_value (&buf, &len))  /*  value  */
+                if (!mp_skip_value (&buf, &len))  /*  value  */
                     return 0;
             }
             break;

@@ -197,7 +197,15 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
                     opt->local_addr, opt->local_addr_len));
             }
         } else {
+            opt = ep->opt;
             if(opt->port) {
+                if(!query->ip[0]) {
+                    mp_free(&mp);
+                    err_add_fatal(&ctx->err,
+                        "Peers with addressses to bind should provide "
+                        "\"ip\" variable in topology url");
+                    return -EADDRNOTAVAIL;
+                }
                 for(asg = ep->assign_head; asg; asg = asg->next) {
                     if(!strcmp(asg->val->host, query->ip)) {
                         addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
@@ -210,8 +218,8 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
                     mp_free(&mp);
                     err_add_fatal(&ctx->err,
                         "Role specifies that address should be bound to, but"
-                        " no such addresss in \"assign\" clause.");
-                    return EADDRNOTAVAIL;
+                        " no such address in \"assign\" clause.");
+                    return -EADDRNOTAVAIL;
                 }
             } else {
                 MP_CHECK(ctx, &mp, mp_put_string(&mp,
@@ -243,6 +251,10 @@ int execute_query(struct query_context *ctx, struct graph *g,
         return 0;
     }
     struct role *role = roleht_get(&top->roles, q->role);
+    if(!role) {
+        err_add_fatal(&ctx->err, "Role not found");
+        return -ENOENT;
+    }
     struct role_rules *rules = &role->source_rules;
     if(!q->is_source) {
         rules = &role->sink_rules;
