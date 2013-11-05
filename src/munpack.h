@@ -21,8 +21,9 @@
 */
 
 
-int nc_mp_parse_int (char **pbuf, int *plen, int *result);
-int nc_mp_parse_string (char **pbuf, int *plen, char **result, int *reslen);
-int nc_mp_parse_array (char **pbuf, int *plen, int *arrlen);
-int nc_mp_parse_mapping (char **pbuf, int *plen, int *maplen);
-int nc_mp_skip_value (char **pbuf, int *plen);
+int mp_parse_int (const char **pbuf, int *plen, int *result);
+int mp_parse_string (const char **pbuf, int *plen,
+    const char **result, int *reslen);
+int mp_parse_array (const char **pbuf, int *plen, int *arrlen);
+int mp_parse_mapping (const char **pbuf, int *plen, int *maplen);
+int mp_skip_value (const char **pbuf, int *plen);

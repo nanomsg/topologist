@@ -23,8 +23,8 @@
 #include <endian.h>
 #include <stdint.h>
 
-int mp_parse_int (char **pbuf, int *plen, int *result) {
-    char *buf;
+int mp_parse_int (const char **pbuf, int *plen, int *result) {
+    const char *buf;
     int len;
     unsigned char marker;
 
@@ -96,8 +96,10 @@ int mp_parse_int (char **pbuf, int *plen, int *result) {
     return 1;
 }
 
-int mp_parse_string (char **pbuf, int *plen, char **result, int *reslen) {
-    char *buf;
+int mp_parse_string (const char **pbuf, int *plen,
+    const char **result, int *reslen)
+{
+    const char *buf;
     int len;
     int strlen;
     unsigned char marker;
@@ -150,8 +152,8 @@ int mp_parse_string (char **pbuf, int *plen, char **result, int *reslen) {
     return 1;
 }
 
-int mp_parse_array (char **pbuf, int *plen, int *arrlen) {
-    char *buf;
+int mp_parse_array (const char **pbuf, int *plen, int *arrlen) {
+    const char *buf;
     int len;
     unsigned char marker;
 
@@ -192,8 +194,8 @@ int mp_parse_array (char **pbuf, int *plen, int *arrlen) {
     return 1;
 }
 
-int mp_parse_mapping (char **pbuf, int *plen, int *maplen) {
-    char *buf;
+int mp_parse_mapping (const char **pbuf, int *plen, int *maplen) {
+    const char *buf;
     int len;
     unsigned char marker;
 
@@ -234,8 +236,8 @@ int mp_parse_mapping (char **pbuf, int *plen, int *maplen) {
     return 1;
 }
 
-int mp_skip_value (char **pbuf, int *plen) {
-    char *buf;
+int mp_skip_value (const char **pbuf, int *plen) {
+    const char *buf;
     int len;
     unsigned char marker;
     uint32_t maplen;

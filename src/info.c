@@ -6,6 +6,44 @@
 #include "query.h"
 #include "build.h"
 #include "config.h"
+#include "munpack.h"
+
+static void print_address(FILE *stream, const char *res, int reslen) {
+    int i;
+    int rcode;
+    int arlen;
+    int addressnum;
+    int tuplelen;
+    const char *addr;
+    int addrlen;
+    const char **buf = &res;
+    int *buflen = &reslen;
+    int conn;
+
+    mp_parse_array (buf, buflen, &arlen);
+    mp_parse_int (buf, buflen, &rcode);
+    if(rcode == 0) {
+        /*  Is unexpected for now, as we use print_result only on success  */
+        fprintf(stderr, "Errorneous reply");
+        return;
+    }
+    /* Skipping socket options */
+    mp_skip_value(buf, buflen);
+    mp_parse_array(buf, buflen, &addressnum);
+    for(i = 0; i < addressnum; ++i) {
+        mp_parse_array(buf, buflen, &tuplelen);
+        mp_parse_int(buf, buflen, &conn);
+        mp_parse_string(buf, buflen, &addr, &addrlen);
+        if(conn) {
+            fprintf(stream, "connect %.*s\n", addrlen, addr);
+        } else {
+            fprintf(stream, "bind %.*s\n", addrlen, addr);
+        }
+        for(i = 2; i < tuplelen; ++i) {
+            mp_skip_value(buf, buflen);
+        }
+    }
+}
 
 static void query_topology(struct cfg_main *cfg) {
     int rc;
@@ -54,8 +92,8 @@ static void query_topology(struct cfg_main *cfg) {
                 err_print(&ctx.err, stderr);
                 continue;
             }
+            print_address(stdout, databuf, datalen);
             /*  TODO(tailhook) print result  */
-            printf("GOT RESULT %d bytes\n", datalen);
             free((void *)databuf);
         }
 
