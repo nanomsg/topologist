@@ -1,4 +1,4 @@
-nanoconfig://simple?role=client NN_REQ
-connect:tcp://10.254.0.1:10000
-nanoconfig://simple?role=server NN_REP
-bind:tcp://10.254.0.1:10000
+RESOLVE nanoconfig://simple?role=client NN_REQ
+connect tcp://10.254.0.1:10000
+RESOLVE nanoconfig://simple?role=worker NN_REP
+bind tcp://10.254.0.1:10000

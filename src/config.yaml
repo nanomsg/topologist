@@ -35,32 +35,32 @@ __types__:
       linger: !Int
         min: 0
         max: 86400000
-        default: 1000
+        default: -1
         description: The socket linger timeout in milliseconds (NN_LINGER
           nanomsg option)
       sndbuf: !Int
         min: 0
         max: 1Ti
-        default: 128ki
+        default: -1
         description: Size of send buffer (NN_SNDBUF option)
       rcvbuf: !Int
         min: 0
         max: 1Ti
-        default: 128ki
+        default: -1
         description: Size of recv buffer (NN_RCVBUF option)
       reconnect-interval: !Int
         min: 1
         max: 86400000
-        default: 100
+        default: -1
         description: Reconnection interval (NN_RECONNECT_IVL option)
       reconnect-interval-max: !Int
         min: 1
         max: 86400000
-        default: 0
+        default: -1
         description: Max reconnection interval for exponential backoff
           (NN_RECONNECT_IVL_MAX option)
-    # options-for-bind: *socket_options
-    # options-for-connect: *socket_options
+    options-for-bind: *socket_options
+    options-for-connect: *socket_options
     # TODO(tailhook) add other socket options
 
   assignment: !Struct

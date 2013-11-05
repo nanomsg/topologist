@@ -8,6 +8,7 @@
 #include "config.h"
 
 static void query_topology(struct cfg_main *cfg) {
+    int rc;
     struct errbuf err;
     struct graph *g = graph_build(cfg, &err);
     if(!g) {
@@ -47,7 +48,9 @@ static void query_topology(struct cfg_main *cfg) {
             int len = strlen(linebuf);
             if(linebuf[len-1] == '\n')
                 --len;
-            if(!execute_query(&ctx, g, linebuf, len, &databuf, &datalen)) {
+            printf("%.*s\n", len, linebuf);
+            rc = execute_query(&ctx, g, linebuf, len, &databuf, &datalen);
+            if(rc < 0) {
                 err_print(&ctx.err, stderr);
                 continue;
             }

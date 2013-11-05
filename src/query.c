@@ -3,6 +3,7 @@
 #include <nanomsg/reqrep.h>
 
 #include "query.h"
+#include "mpack.h"
 
 const int min_request_size = 8 /* strlen("RESOLVE ") */ +
     15 /* strlen("nanoconfig://a ") */ +
@@ -39,6 +40,7 @@ static int query_url_parse(struct query_context *ctx,
     memcpy(self->topology, topname, toplen);
     self->topology[toplen] = 0;
     self->role[0] = 0;
+    self->ip[0] = 0;
 
     const char *eq, *amp;
     while(1) {
@@ -61,9 +63,12 @@ static int query_url_parse(struct query_context *ctx,
         char *target = NULL;
         int maxlen = 0;
 
-        if(eq - qstr == 4 /* strlen("role") */ && !memcmp(qstr, "role", 4)) {
+        if(eq - qstr == 4 && !memcmp(qstr, "role", 4)) {
             target = self->role;
             maxlen = 24;
+        } else if(eq - qstr == 2 && !memcmp(qstr, "ip", 2)) {
+            target = self->ip;
+            maxlen = 39;
         }
 
         if(target && maxlen) {
@@ -142,6 +147,83 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
     struct role_rules *rr, const char **result, int *resultlen)
 {
     (void) ctx; (void) query; (void) result; (void) resultlen; (void) rr;
+    struct mp_buf mp;
+    struct role_endpoint *ep;
+    struct role_assign *asg;
+    struct cfg_pair_options *opt;
+
+    MP_CHECK(ctx, &mp, mp_init(&mp))
+    MP_CHECK(ctx, &mp, mp_start_array(&mp, 4));
+    MP_CHECK(ctx, &mp, mp_put_int(&mp, 1));
+
+    /*  TODO(tailhook) implement socket-level socket options  */
+    MP_CHECK(ctx, &mp, mp_start_map(&mp, 0));
+
+    /*  The msgpack requires to know size of mapping in advance
+     *  so we first calculate it. Keep in sync with the code below */
+    int epnum = 0;
+    for(ep = rr->head; ep; ep = ep->next) {
+        if(ep->connect) {
+            if(ep->opt->port) {
+                for(asg = ep->peer->assign_head; asg; asg = asg->next)
+                    epnum += 1;
+            } else if(ep->opt->local_addr) {
+                epnum += 1;
+            }
+        } else {
+            epnum += 1;
+        }
+    }
+
+    MP_CHECK(ctx, &mp, mp_start_array(&mp, epnum));
+    /*  The msgpack requires to know size of mapping in advance
+     *  so we first calculate it. Keep in sync with the code above */
+    for(ep = rr->head; ep; ep = ep->next) {
+        MP_CHECK(ctx, &mp, mp_start_array(&mp, 3));
+        MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
+        char addrbuf[128];  /* max nanomsg addr */
+        int addrlen;
+        if(ep->connect) {
+            struct role_endpoint *pep = ep->peer;
+            opt = pep->opt;
+            if(opt->port) {
+                for(asg = pep->assign_head; asg; asg = asg->next) {
+                    addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
+                        "tcp://%s:%d", asg->val->host, (int)opt->port);
+                    MP_CHECK(ctx, &mp, mp_put_string(&mp, addrbuf, addrlen));
+                }
+            } else if(opt->local_addr) {
+                MP_CHECK(ctx, &mp, mp_put_string(&mp,
+                    opt->local_addr, opt->local_addr_len));
+            }
+        } else {
+            if(opt->port) {
+                for(asg = ep->assign_head; asg; asg = asg->next) {
+                    if(!strcmp(asg->val->host, query->ip)) {
+                        addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
+                            "tcp://%s:%d", asg->val->host, (int)opt->port);
+                        MP_CHECK(ctx, &mp, mp_put_string(&mp, addrbuf, addrlen));
+                        break;
+                    }
+                }
+                if(!asg) {
+                    mp_free(&mp);
+                    err_add_fatal(&ctx->err,
+                        "Role specifies that address should be bound to, but"
+                        " no such addresss in \"assign\" clause.");
+                    return EADDRNOTAVAIL;
+                }
+            } else {
+                MP_CHECK(ctx, &mp, mp_put_string(&mp,
+                    opt->local_addr, opt->local_addr_len));
+            }
+        }
+    }
+
+    MP_CHECK(ctx, &mp, mp_start_array(&mp, 0));
+
+    mp_move_to(&mp, result, resultlen);
+
     return 0;
 }
 
