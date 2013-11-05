@@ -20,6 +20,6 @@ For building from git::
     git submodule update --init --recursive
     mkdir build
     cd build
-    cmake ..
+    cmake .. -DCMAKE_INSTALL_PREFIX=/usr
     make
     sudo make install
