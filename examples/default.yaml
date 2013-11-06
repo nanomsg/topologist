@@ -1,0 +1,16 @@
+server:
+  config-addr: !Req ipc:///var/run/topologist/config.sock
+  updates-addr: !Pub ipc:///var/run/topologist/updates.sock
+
+layouts:
+  #example:
+  #  server <- client:
+  #    port: 10010
+
+topologies:
+  #simple: !Topology
+  #  type: reqrep
+  #  layout: simple
+  #  assign:
+  #    server:
+  #    - host: 10.0.0.3

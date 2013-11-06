@@ -66,6 +66,11 @@ IF(ASTYLE)
         )
 ENDIF()
 
+install (TARGETS topologist topology
+    RUNTIME DESTINATION bin)
+install (FILES examples/default.yaml
+    DESTINATION /etc)
+
 GET_TARGET_PROPERTY(TOPOLOGY topology LOCATION)
 
 ENABLE_TESTING()
