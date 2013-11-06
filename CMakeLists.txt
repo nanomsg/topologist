@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)  # feel free to try lower
-PROJECT(topologist)
+PROJECT(topologist C)
 
 SET(common_files
     src/hash_tables.c
