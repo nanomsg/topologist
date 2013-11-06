@@ -19,7 +19,7 @@
 #  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 #  IN THE SOFTWARE.
 #
-_meta__:
+__meta__:
   program-name: topologist
   default-config: /etc/topologist.yaml
   description: A configuration service implementation
