@@ -2,17 +2,22 @@
 Topologist
 ==========
 
+:Status: Pre-alpha
+:Documentation: http://topologist.readthedocs.org/
+
 A topology configuration service for nanomsg_ and nanoconfig_.
 
-.. _nanomsg: http://nanomsg.org
-.. _nanoconfig: http://github.com/nanomsg/nanoconfig
+The project is meant to be reference implementation configuration service.
+In other words, it should be able to define arbitrarily complex topology, and
+leverage all the features of the nanonmsg. But for some situations it's
+configuration format may be sub-optimal.
 
 
 Building
 ========
 
 Dependencies:
-* cmake (building only)
+* cmake (build-time only)
 * nanomsg
 
 For building from git::
@@ -23,3 +28,6 @@ For building from git::
     cmake .. -DCMAKE_INSTALL_PREFIX=/usr
     make
     sudo make install
+
+.. _nanomsg: http://nanomsg.org
+.. _nanoconfig: http://github.com/nanomsg/nanoconfig
