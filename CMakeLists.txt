@@ -23,6 +23,7 @@ ADD_EXECUTABLE(topologist
     ${common_files}
     src/main.c
     config.c)
+
 ADD_EXECUTABLE(topology
     ${common_files}
     src/info.c
@@ -43,7 +44,7 @@ SET_SOURCE_FILES_PROPERTIES(
     config.h config.c
     PROPERTIES GENERATED 1
     )
-TARGET_LINK_LIBRARIES(topologist quire)
+TARGET_LINK_LIBRARIES(topologist quire nanomsg)
 INCLUDE_DIRECTORIES(BEFORE SYSTEM quire/include)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 

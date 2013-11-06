@@ -1,0 +1,26 @@
+# Run this config with the following services:
+#
+#   export NN_CONFIG_SERVICE=ipc:///tmp/topologist.sock
+#   nccat --rep -T'simple?role=server&ip=127.0.0.2' -ADrep1
+#   nccat --rep -T'simple?role=server&ip=127.0.0.3' -SDrep2
+#   nccat --req -T'simple?role=client' -ADreq1 -i1
+#   nccat --req -T'simple?role=client' -ADreq2 -i2
+#
+# You can also run any number of --req services
+
+server:
+  config-addr: [ipc:///tmp/topologist.sock]
+
+layouts:
+  simple:
+    server <- client:
+      port: 10000
+
+topologies:
+  simple: !Topology
+    type: reqrep
+    layout: simple
+    assign:
+      server:
+      - host: 127.0.0.2
+      - host: 127.0.0.3

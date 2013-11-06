@@ -1,6 +1,6 @@
 server:
-  config-addr: !Req ipc://.test-config.sock
-  updates-addr: !Pub ipc://.test-updates.sock
+  config-addr: [ipc://.test-config.sock]
+  updates-addr: [ipc://.test-updates.sock]
 
 layouts:
   simple:

@@ -179,8 +179,6 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
     /*  The msgpack requires to know size of mapping in advance
      *  so we first calculate it. Keep in sync with the code above */
     for(ep = rr->head; ep; ep = ep->next) {
-        MP_CHECK(ctx, &mp, mp_start_array(&mp, 3));
-        MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
         char addrbuf[128];  /* max nanomsg addr */
         int addrlen;
         if(ep->connect) {
@@ -190,9 +188,13 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
                 for(asg = pep->assign_head; asg; asg = asg->next) {
                     addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
                         "tcp://%s:%d", asg->val->host, (int)opt->port);
+                    MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
+                    MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
                     MP_CHECK(ctx, &mp, mp_put_string(&mp, addrbuf, addrlen));
                 }
             } else if(opt->local_addr) {
+                MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
+                MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
                 MP_CHECK(ctx, &mp, mp_put_string(&mp,
                     opt->local_addr, opt->local_addr_len));
             }
@@ -210,6 +212,8 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
                     if(!strcmp(asg->val->host, query->ip)) {
                         addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
                             "tcp://%s:%d", asg->val->host, (int)opt->port);
+                        MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
+                        MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
                         MP_CHECK(ctx, &mp, mp_put_string(&mp, addrbuf, addrlen));
                         break;
                     }
@@ -222,6 +226,8 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
                     return -EADDRNOTAVAIL;
                 }
             } else {
+                MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
+                MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
                 MP_CHECK(ctx, &mp, mp_put_string(&mp,
                     opt->local_addr, opt->local_addr_len));
             }
