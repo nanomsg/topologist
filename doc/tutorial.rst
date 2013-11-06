@@ -18,8 +18,8 @@ Here is a simple configuration file for one service:
 .. code-block:: yaml
 
     server:
-      config-addr: !Req tcp://10.0.0.1:10001
-      updates-addr: !Pub tcp://10.0.0.2:10002
+      config-addr: [tcp://10.0.0.1:10001]
+      updates-addr: [tcp://10.0.0.2:10002]
 
     layouts:
       simple:
@@ -42,11 +42,13 @@ The Server Section
 .. code-block:: yaml
 
     server:
-      config-addr: !Req tcp://10.0.0.1:10001
-      updates-addr: !Pub tcp://10.0.0.2:10002
+      config-addr: [tcp://10.0.0.1:10001]
+      updates-addr: [tcp://10.0.0.2:10002]
 
 It consists of addresses where to listen to for requests and some other
-server-wide settings.
+server-wide settings. The addresses in example are in square brackets because
+they are actually YAML lists, for the case you want multiple addresses to
+listen to (such as on different network interfaces).
 
 
 The Layouts Section

@@ -1,6 +1,6 @@
 server:
-  config-addr: !Req ipc:///var/run/topologist/config.sock
-  updates-addr: !Pub ipc:///var/run/topologist/updates.sock
+  config-addr: [ipc:///var/run/topologist/config.sock]
+  updates-addr: [ipc:///var/run/topologist/updates.sock]
 
 layouts:
   #example:
