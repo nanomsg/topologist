@@ -247,14 +247,14 @@ int execute_query(struct query_context *ctx, struct graph *g,
 {
     err_init(&ctx->err);
     if(!query_parse(ctx, query, querylen))
-        return 0;
+        return -EINVAL;
     struct query *q = &ctx->query;
 
     struct topology *top = topht_get(&g->topologies, q->topology);
     if(!top) {
         err_add_fatal(&ctx->err, "Topology \"%s\" not found",
             q->topology);
-        return 0;
+        return -ENOENT;
     }
     struct role *role = roleht_get(&top->roles, q->role);
     if(!role) {
