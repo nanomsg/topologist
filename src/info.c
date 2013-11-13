@@ -48,7 +48,10 @@ static void print_address(FILE *stream, const char *res, int reslen) {
 static void query_topology(struct cfg_main *cfg) {
     int rc;
     struct errbuf err;
+    const char *databuf;
+    int datalen;
     struct graph *g = graph_build(cfg, &err);
+
     if(!g) {
         fprintf(stderr, "topology: Not enough memory to build graph");
         exit(1);
@@ -70,8 +73,6 @@ static void query_topology(struct cfg_main *cfg) {
         stdout = f;
     }
     if(cfg->query_file) {
-        const char *databuf;
-        int datalen;
         char linebuf[4096];
         FILE *inp = fopen(cfg->query_file, "r");
 
@@ -98,7 +99,19 @@ static void query_topology(struct cfg_main *cfg) {
         }
 
         fclose(inp);
-
+    }
+    if(cfg->query) {
+        struct query_context ctx;
+        printf("%.*s\n", cfg->query_len, cfg->query);
+        rc = execute_query(&ctx, g,
+            cfg->query, cfg->query_len, &databuf, &datalen);
+        if(rc < 0) {
+            err_print(&ctx.err, stderr);
+        } else {
+            print_address(stdout, databuf, datalen);
+            /*  TODO(tailhook) print result  */
+            free((void *)databuf);
+        }
     }
     fclose(stdout);
     graph_free(g);

@@ -157,6 +157,12 @@ __if__:defined COMMAND_LINE:
       names: [-Q, --query-file]
       metavar: FILE
     description: Text file with list of queries
+  query: !String
+    only-command-line: true
+    command-line:
+      names: [-q, --query]
+      metavar: STRING
+    description: Executed a query and print results
   graph: !String
     only-command-line: true
     command-line:
