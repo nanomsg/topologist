@@ -24,7 +24,7 @@ static void print_address(FILE *stream, const char *res, int reslen) {
     mp_parse_int (buf, buflen, &rcode);
     if(rcode == 0) {
         /*  Is unexpected for now, as we use print_result only on success  */
-        fprintf(stderr, "Errorneous reply");
+        fprintf(stderr, "Errorneous reply\n");
         return;
     }
     /* Skipping socket options */
