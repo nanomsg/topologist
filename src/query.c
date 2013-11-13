@@ -174,6 +174,10 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
             epnum += 1;
         }
     }
+    if(epnum == 0) {
+        err_add_fatal(&ctx->err, "No addresses found");
+        return -ENOENT;
+    }
 
     MP_CHECK(ctx, &mp, mp_start_array(&mp, epnum));
     /*  The msgpack requires to know size of mapping in advance
