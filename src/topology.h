@@ -4,19 +4,18 @@
 #include "hints.h"
 #include "hash_tables.h"
 
-struct role_assign {
-    struct role_assign *next;
-    struct cfg_assignment *val;
+struct role_ip {
+    struct role_ip *next;
+    const char *ip;
 };
 
 struct role_endpoint {
     struct role_endpoint *next;
-    struct cfg_pair_options *opt;
     int connect;
     struct role_endpoint *peer;
 
-    struct role_assign *assign_head;
-    struct role_assign **assign_tail;
+    struct role_ip *ip_head;
+    struct role_ip **ip_tail;
 };
 
 struct role_rules {
@@ -32,6 +31,7 @@ struct role {
 
 struct topology {
     struct roleht roles;
+    int default_port;
 };
 
 struct graph {

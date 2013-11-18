@@ -27,10 +27,10 @@
 #include "utils.h"
 #include "../error.h"
 
-struct cfg_m_str_m_str_pair_options *inf_get_layout(
+struct cfg_m_str_a_str *inf_get_layout(
     struct inf_context *ctx, const char *n)
 {
-    struct cfg_m_str_m_str_pair_options *iter;
+    struct cfg_m_str_a_str *iter;
     for(iter = ctx->layouts; iter; iter = iter->next) {
         if(!strcmp(iter->key, n))
             return iter;

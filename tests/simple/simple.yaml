@@ -4,13 +4,13 @@ server:
 
 layouts:
   simple:
-    server <- client:
-      port: 10000
+  - server <- client
 
 topologies:
   simple: !Topology
     type: reqrep
     layout: simple
-    assign:
+    port: 10000
+    ip-addresses:
       server:
-      - host: 10.254.0.1
+      - 10.254.0.1

@@ -27,7 +27,7 @@
 #include "../error.h"
 
 struct inf_context {
-    struct cfg_m_str_m_str_pair_options *layouts;
+    struct cfg_m_str_a_str *layouts;
     struct errbuf err;
 };
 

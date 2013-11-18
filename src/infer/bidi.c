@@ -32,7 +32,7 @@
 struct topology *infer_bidi_topology(
     struct cfg_intern *def, struct inf_context *ctx)
 {
-    struct cfg_m_str_m_str_pair_options *layout;
+    struct cfg_m_str_a_str *layout;
     layout = inf_get_layout(ctx, def->layout);
     if(!layout) {
         return NULL;
@@ -40,18 +40,19 @@ struct topology *infer_bidi_topology(
     struct topology *self = topology_new();
     if(!self)
         return NULL;
+    self->default_port = def->port;
 
-    struct cfg_m_str_pair_options *conn;
+    struct cfg_a_str *conn;
     for(conn = layout->val; conn; conn = conn->next) {
         char bindrole[25];
         char connrole[25];
         int source;
-        if(sscanf(conn->key, "%24s -> %24s", bindrole, connrole) == 2) {
+        if(sscanf(conn->val, "%24s -> %24s", bindrole, connrole) == 2) {
             source = 0;
-        } else if(sscanf(conn->key, "%24s <- %24s", bindrole, connrole) == 2) {
+        } else if(sscanf(conn->val, "%24s <- %24s", bindrole, connrole) == 2) {
             source = 1;
         } else {
-            err_add_fatal(&ctx->err, "Bad layout rule \"%s\"\n", conn->key);
+            err_add_fatal(&ctx->err, "Bad layout rule \"%s\"\n", conn->val);
             continue;
         }
 
@@ -86,29 +87,29 @@ struct topology *infer_bidi_topology(
         struct role_endpoint *ep1;
         struct role_endpoint *ep2;
         if(source == 0) {
-            ep1 = rrules_add_endpoint(&bindr->source_rules, &conn->val, 0);
-            ep2 = rrules_add_endpoint(&connr->sink_rules, &conn->val, 1);
+            ep1 = rrules_add_endpoint(&bindr->source_rules, 0);
+            ep2 = rrules_add_endpoint(&connr->sink_rules, 1);
         } else {
-            ep1 = rrules_add_endpoint(&bindr->sink_rules, &conn->val, 0);
-            ep2 = rrules_add_endpoint(&connr->source_rules, &conn->val, 1);
+            ep1 = rrules_add_endpoint(&bindr->sink_rules, 0);
+            ep2 = rrules_add_endpoint(&connr->source_rules, 1);
         }
         ep1->peer = ep2;
         ep2->peer = ep1;
     }
 
-    struct cfg_m_str_a_assignment *roleass;
-    for(roleass = def->assign; roleass; roleass = roleass->next) {
-        struct role *role = roleht_get(&self->roles, roleass->key);
+    struct cfg_m_str_a_str *roleip;
+    for(roleip = def->ip_addresses; roleip; roleip = roleip->next) {
+        struct role *role = roleht_get(&self->roles, roleip->key);
         if(!role) {
             err_add_fatal(&ctx->err,
                 "Assignment for non-existent role \"%s\"\n",
-                roleass->key);
+                roleip->key);
             continue;
         }
 
-        struct cfg_a_assignment *ass;
-        for(ass = roleass->val; ass; ass = ass->next) {
-            if(role_add_assign(role, &ass->val) < 0)
+        struct cfg_a_str *ip;
+        for(ip = roleip->val; ip; ip = ip->next) {
+            if(role_add_ip(role, ip->val) < 0)
                 goto memory_error;
         }
     }

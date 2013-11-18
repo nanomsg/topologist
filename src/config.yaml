@@ -34,60 +34,6 @@ __types__:
     default-tag: Bind
     type: !String
 
-  pair_options: !Struct
-    port: &port !Int
-      min: 1
-      max: 65535
-      description: A TCP port to use for connection. The port is allocated
-        on the bound side
-      default: 0
-    priority: !Int
-      min: 1
-      max: 16
-      default: 8
-      description: The priority for this connection. Useful only on REQ and
-        PUSH sockets. (NN_SNDPRIO nanomsg option)
-    local-addr: !String
-      description: The IPC or INPROC address. Note: topologist doesn't ensure
-        that request origin is in same process, so use INPROC addresses with
-        care. However topologist assumes that local addresses are different
-        on the different host (this assumption may be broken for lightweight
-        virtual machines like LXC)
-    <<: &socket_options
-      linger: !Int
-        min: 0
-        max: 86400000
-        default: -1
-        description: The socket linger timeout in milliseconds (NN_LINGER
-          nanomsg option)
-      sndbuf: !Int
-        min: 0
-        max: 1Ti
-        default: -1
-        description: Size of send buffer (NN_SNDBUF option)
-      rcvbuf: !Int
-        min: 0
-        max: 1Ti
-        default: -1
-        description: Size of recv buffer (NN_RCVBUF option)
-      reconnect-interval: !Int
-        min: 1
-        max: 86400000
-        default: -1
-        description: Reconnection interval (NN_RECONNECT_IVL option)
-      reconnect-interval-max: !Int
-        min: 1
-        max: 86400000
-        default: -1
-        description: Max reconnection interval for exponential backoff
-          (NN_RECONNECT_IVL_MAX option)
-    options-for-bind: *socket_options
-    options-for-connect: *socket_options
-    # TODO(tailhook) add other socket options
-
-  assignment: !Struct
-    host: !String
-
   topology_type: !Enum
     options:
       reqrep: 1
@@ -100,18 +46,16 @@ __types__:
   intern: !Struct
     type: !Type topology_type
     layout: !String
-    node-hierarchy: !Array
-      element: !String
-      description: List of fields from request that form hierarchy for this
-        topology. Top to bottom order. They are used both: to apply rules to
-        hierarchy and to create names for topology subscriptions.
-    sub-layouts: !Mapping
-      key-element: !String
-      value-element: !String
-    assign: !Mapping
+    port: !Int
+      min: 1
+      max: 65535
+      description: Default port used for the topology, if not overriden by
+        per-role, or per-connection basis.
+    ip-addresses: !Mapping
+      description: List of ip addresses for the roles that bind on IP
       key-element: !String
       value-element: !Array
-        element: !Type assignment
+        element: !String
 
   extern: !Struct
     topology: !String
@@ -141,9 +85,8 @@ server:
 
 layouts: !Mapping
   key-element: !String
-  value-element: !Mapping
-    key-element: !String
-    value-element: !Type pair_options
+  value-element: !Array
+    element: !String
 
 topologies: !Mapping
   key-element: !String

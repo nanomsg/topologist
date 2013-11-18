@@ -144,13 +144,13 @@ static int query_parse(struct query_context *ctx, const char *q, int qlen)
 }
 
 static int rrules_resolve(struct query_context *ctx, struct query *query,
+    struct topology *top,
     struct role_rules *rr, const char **result, int *resultlen)
 {
     (void) ctx; (void) query; (void) result; (void) resultlen; (void) rr;
     struct mp_buf mp;
     struct role_endpoint *ep;
-    struct role_assign *asg;
-    struct cfg_pair_options *opt;
+    struct role_ip *ip;
 
     MP_CHECK(ctx, &mp, mp_init(&mp))
     MP_CHECK(ctx, &mp, mp_start_array(&mp, 4));
@@ -162,18 +162,8 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
     /*  The msgpack requires to know size of mapping in advance
      *  so we first calculate it. Keep in sync with the code below */
     int epnum = 0;
-    for(ep = rr->head; ep; ep = ep->next) {
-        if(ep->connect) {
-            if(ep->opt->port) {
-                for(asg = ep->peer->assign_head; asg; asg = asg->next)
-                    epnum += 1;
-            } else if(ep->opt->local_addr) {
-                epnum += 1;
-            }
-        } else {
-            epnum += 1;
-        }
-    }
+    for(ep = rr->head; ep; ep = ep->next)
+        epnum += 1;
     if(epnum == 0) {
         err_add_fatal(&ctx->err, "No addresses found");
         return -ENOENT;
@@ -187,53 +177,37 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
         int addrlen;
         if(ep->connect) {
             struct role_endpoint *pep = ep->peer;
-            opt = pep->opt;
-            if(opt->port) {
-                for(asg = pep->assign_head; asg; asg = asg->next) {
+            for(ip = pep->ip_head; ip; ip = ip->next) {
+                addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
+                    "tcp://%s:%d", ip->ip, (int)top->default_port);
+                MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
+                MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
+                MP_CHECK(ctx, &mp, mp_put_string(&mp, addrbuf, addrlen));
+            }
+        } else {
+            if(!query->ip[0]) {
+                mp_free(&mp);
+                err_add_fatal(&ctx->err,
+                    "Peers with addressses to bind should provide "
+                    "\"ip\" variable in topology url");
+                return -EADDRNOTAVAIL;
+            }
+            for(ip = ep->ip_head; ip; ip = ip->next) {
+                if(!strcmp(ip->ip, query->ip)) {
                     addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
-                        "tcp://%s:%d", asg->val->host, (int)opt->port);
+                        "tcp://%s:%d", ip->ip, (int)top->default_port);
                     MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
                     MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
                     MP_CHECK(ctx, &mp, mp_put_string(&mp, addrbuf, addrlen));
+                    break;
                 }
-            } else if(opt->local_addr) {
-                MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
-                MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
-                MP_CHECK(ctx, &mp, mp_put_string(&mp,
-                    opt->local_addr, opt->local_addr_len));
             }
-        } else {
-            opt = ep->opt;
-            if(opt->port) {
-                if(!query->ip[0]) {
-                    mp_free(&mp);
-                    err_add_fatal(&ctx->err,
-                        "Peers with addressses to bind should provide "
-                        "\"ip\" variable in topology url");
-                    return -EADDRNOTAVAIL;
-                }
-                for(asg = ep->assign_head; asg; asg = asg->next) {
-                    if(!strcmp(asg->val->host, query->ip)) {
-                        addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
-                            "tcp://%s:%d", asg->val->host, (int)opt->port);
-                        MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
-                        MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
-                        MP_CHECK(ctx, &mp, mp_put_string(&mp, addrbuf, addrlen));
-                        break;
-                    }
-                }
-                if(!asg) {
-                    mp_free(&mp);
-                    err_add_fatal(&ctx->err,
-                        "Role specifies that address should be bound to, but"
-                        " no such address in \"assign\" clause.");
-                    return -EADDRNOTAVAIL;
-                }
-            } else {
-                MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
-                MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
-                MP_CHECK(ctx, &mp, mp_put_string(&mp,
-                    opt->local_addr, opt->local_addr_len));
+            if(!ip) {
+                mp_free(&mp);
+                err_add_fatal(&ctx->err,
+                    "Role specifies that address should be bound to, but"
+                    " no such address in \"ip-addresses\" clause.");
+                return -EADDRNOTAVAIL;
             }
         }
     }
@@ -269,5 +243,5 @@ int execute_query(struct query_context *ctx, struct graph *g,
     if(!q->is_source) {
         rules = &role->sink_rules;
     }
-    return rrules_resolve(ctx, q, rules, result, resultlen);
+    return rrules_resolve(ctx, q, top, rules, result, resultlen);
 }

@@ -5,6 +5,7 @@ struct topology *topology_new() {
     if(!self)
         return NULL;
     roleht_init(&self->roles);
+    self->default_port = -1;
     return self;
 }
 
@@ -12,8 +13,8 @@ static void rrules_free(struct role_rules *rules) {
     struct role_endpoint *ep, *nxt;
     for(ep = rules->head; ep; ep = nxt) {
         nxt = ep->next;
-        struct role_assign *acur, *anxt;
-        for(acur = ep->assign_head; acur; acur = anxt) {
+        struct role_ip *acur, *anxt;
+        for(acur = ep->ip_head; acur; acur = anxt) {
             anxt = acur->next;
             free(acur);
         }

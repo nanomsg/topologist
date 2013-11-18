@@ -29,8 +29,7 @@ void rrules_init(struct role_rules *self) {
     self->tail = &self->head;
 }
 
-struct role_endpoint *rrules_add_endpoint(struct role_rules *self,
-    struct cfg_pair_options *opt, int connect)
+struct role_endpoint *rrules_add_endpoint(struct role_rules *self, int connect)
 {
     struct role_endpoint *ep = malloc(sizeof(struct role_endpoint));
     if(!ep)
@@ -38,39 +37,38 @@ struct role_endpoint *rrules_add_endpoint(struct role_rules *self,
     ep->next = NULL;
     *self->tail = ep;
     self->tail = &ep->next;
-    ep->opt = opt;
     ep->connect = connect;
-    ep->assign_head = NULL;
-    ep->assign_tail = &ep->assign_head;
+    ep->ip_head = NULL;
+    ep->ip_tail = &ep->ip_head;
     ep->peer = NULL;
     return ep;
 }
 
-struct role_assign *ep_add_assign(struct role_endpoint *self,
-                                  struct cfg_assignment *ass)
+struct role_ip *ep_add_ip(struct role_endpoint *self,
+                                  const char *ip)
 {
-    struct role_assign *sass = malloc(sizeof(struct role_assign));
-    if(!sass)
+    struct role_ip *sip = malloc(sizeof(struct role_ip));
+    if(!sip)
         return NULL;
-    sass->val = ass;
-    sass->next = NULL;
-    *self->assign_tail = sass;
-    self->assign_tail = &sass->next;
-    return sass;
+    sip->ip = ip;
+    sip->next = NULL;
+    *self->ip_tail = sip;
+    self->ip_tail = &sip->next;
+    return sip;
 }
 
-int role_add_assign(struct role *self, struct cfg_assignment *ass)
+int role_add_ip(struct role *self, const char *ip)
 {
     struct role_endpoint *ep;
     for(ep = self->source_rules.head; ep; ep = ep->next) {
         if(!ep->connect) {
-            if(!ep_add_assign(ep, ass))
+            if(!ep_add_ip(ep, ip))
                 return -ENOMEM;
         }
     }
     for(ep = self->sink_rules.head; ep; ep = ep->next) {
         if(!ep->connect) {
-            if(!ep_add_assign(ep, ass))
+            if(!ep_add_ip(ep, ip))
                 return -ENOMEM;
         }
     }
