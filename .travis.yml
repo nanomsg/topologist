@@ -1,0 +1,18 @@
+language: c
+install:
+- git clone git://github.com/nanomsg/nanomsg.git
+- cd nanomsg
+- ./configure --prefix=/usr
+- make
+- make install DESTDIR=dist
+compiler:
+- gcc
+- clang
+script:
+- cmake .
+    -DCMAKE_INSTALL_PREFIX=/usr
+    -DASTYLE=
+    -DCMAKE_C_FLAGS=-Idist/usr/include
+    -DCMAKE_EXE_LINKER_FLAGS=-Ldist/usr/lib
+- make
+- LD_LIBRARY_PATH=dist/usr/lib ctest -V
