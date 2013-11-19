@@ -1,6 +1,8 @@
 Welcome to topologist's documentation!
 ======================================
 
+Sources: http://github.com/nanomsg/topologist
+
 Contents:
 
 .. toctree::
@@ -8,12 +10,4 @@ Contents:
 
    tutorial
    reference
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
