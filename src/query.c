@@ -1,6 +1,9 @@
 #include <string.h>
 #include <nanomsg/nn.h>
 #include <nanomsg/reqrep.h>
+#include <nanomsg/pipeline.h>
+#include <nanomsg/pubsub.h>
+#include <nanomsg/survey.h>
 
 #include "query.h"
 #include "mpack.h"
@@ -16,6 +19,12 @@ static struct socket_type {
 } socket_types[] = {
     {"NN_REQ", 1, NN_REQ},
     {"NN_REP", 0, NN_REP},
+    {"NN_PUSH", 1, NN_PUSH},
+    {"NN_PULL", 0, NN_PULL},
+    {"NN_REQ", 1, NN_REQ},
+    {"NN_REP", 0, NN_REP},
+    {"NN_SURVEYOR", 1, NN_SURVEYOR},
+    {"NN_RESPONDENT", 0, NN_RESPONDENT},
     {NULL, 0, 0}
 };
 

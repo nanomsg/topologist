@@ -1,0 +1,25 @@
+server:
+  config-addr: [ipc://.test-config.sock]
+  updates-addr: [ipc://.test-updates.sock]
+
+layouts:
+  spread:
+  - master -> worker
+  gather:
+  - master <- worker
+
+topologies:
+
+  spread: !Topology
+    type: pipeline
+    layout: spread
+    port: 10000
+    ip-addresses: &ips
+      master:
+      - 10.254.0.1
+
+  gather: !Topology
+    type: pipeline
+    layout: gather
+    port: 10001
+    ip-addresses: *ips

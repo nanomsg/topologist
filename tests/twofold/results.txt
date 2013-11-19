@@ -1,0 +1,12 @@
+RESOLVE nanoconfig://spread?role=worker&ip=10.254.0.2 NN_PULL
+connect tcp://10.254.0.1:10000
+RESOLVE nanoconfig://spread?role=master&ip=10.254.0.1 NN_PUSH
+bind tcp://10.254.0.1:10000
+RESOLVE nanoconfig://spread?role=worker&ip=10.254.0.3 NN_PULL
+connect tcp://10.254.0.1:10000
+RESOLVE nanoconfig://gather?role=worker&ip=10.254.0.2 NN_PUSH
+connect tcp://10.254.0.1:10001
+RESOLVE nanoconfig://gather?role=master&ip=10.254.0.1 NN_PULL
+bind tcp://10.254.0.1:10001
+RESOLVE nanoconfig://gather?role=worker&ip=10.254.0.3 NN_PUSH
+connect tcp://10.254.0.1:10001
