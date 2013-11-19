@@ -2,6 +2,7 @@ language: c
 install:
 - git clone git://github.com/nanomsg/nanomsg.git
 - cd nanomsg
+- sh autogen.sh
 - ./configure --prefix=/usr
 - make
 - make install DESTDIR=dist
