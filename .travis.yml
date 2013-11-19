@@ -5,7 +5,7 @@ install:
 - sh autogen.sh
 - ./configure --prefix=/usr
 - make
-- make install DESTDIR=dist
+- make install DESTDIR=$TRAVIS_BUILD_DIR/dist
 compiler:
 - gcc
 - clang
@@ -13,7 +13,7 @@ script:
 - cmake .
     -DCMAKE_INSTALL_PREFIX=/usr
     -DASTYLE=
-    -DCMAKE_C_FLAGS=-Idist/usr/include
-    -DCMAKE_EXE_LINKER_FLAGS=-Ldist/usr/lib
+    -DCMAKE_C_FLAGS=-I$TRAVIS_BUILD_DIR/dist/usr/include
+    -DCMAKE_EXE_LINKER_FLAGS=-L$TRAVIS_BUILD_DIR/dist/usr/lib
 - make
-- LD_LIBRARY_PATH=dist/usr/lib ctest -V
+- LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/dist/usr/lib ctest -V
