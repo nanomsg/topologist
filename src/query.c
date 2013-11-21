@@ -171,8 +171,16 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
     /*  The msgpack requires to know size of mapping in advance
      *  so we first calculate it. Keep in sync with the code below */
     int epnum = 0;
-    for(ep = rr->head; ep; ep = ep->next)
-        epnum += 1;
+    for(ep = rr->head; ep; ep = ep->next) {
+        if(ep->connect) {
+            struct role_endpoint *pep = ep->peer;
+            for(ip = pep->ip_head; ip; ip = ip->next) {
+                epnum += 1;
+            }
+        } else {
+            epnum += 1;
+        }
+    }
     if(epnum == 0) {
         err_add_fatal(&ctx->err, "No addresses found");
         return -ENOENT;
