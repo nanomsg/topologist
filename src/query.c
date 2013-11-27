@@ -162,9 +162,6 @@ static int put_socket_options(struct query_context *ctx, struct mp_buf *mb,
     if(options->reconnect_interval_set) nopt += 1;
     if(options->reconnect_interval_max_set) nopt += 1;
     if(options->keepalive) nopt += 1;
-    if(options->tcp_keepidle) nopt += 1;
-    if(options->tcp_keepcnt) nopt += 1;
-    if(options->tcp_keepintvl) nopt += 1;
 
     MP_CHECK(ctx, mb, mp_start_map(mb, nopt));
     if(options->linger_set) {
@@ -194,6 +191,19 @@ static int put_socket_options(struct query_context *ctx, struct mp_buf *mb,
             "NN_KEEPALIVE", strlen("NN_KEEPALIVE")));
         MP_CHECK(ctx, mb, mp_put_int(mb, options->keepalive));
     }
+    return 0;
+}
+
+static int put_endpoint_options(struct query_context *ctx, struct mp_buf *mb,
+    struct cfg_sockopts *options)
+{
+    int nopt = 0;
+
+    if(options->tcp_keepidle) nopt += 1;
+    if(options->tcp_keepcnt) nopt += 1;
+    if(options->tcp_keepintvl) nopt += 1;
+
+    MP_CHECK(ctx, mb, mp_start_map(mb, nopt));
     if(options->tcp_keepidle_set) {
         MP_CHECK(ctx, mb, mp_put_string(mb,
             "NN_TCP_KEEPIDLE", strlen("NN_TCP_KEEPIDLE")));
@@ -257,9 +267,11 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
             for(ip = pep->ip_head; ip; ip = ip->next) {
                 addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
                     "tcp://%s:%d", ip->ip, (int)top->default_port);
-                MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
+                MP_CHECK(ctx, &mp, mp_start_array(&mp, 3));
                 MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
                 MP_CHECK(ctx, &mp, mp_put_string(&mp, addrbuf, addrlen));
+                MP_CHECK(ctx, &mp,
+                    put_endpoint_options(ctx, &mp, top->default_options));
             }
         } else {
             if(!query->ip[0]) {
@@ -273,9 +285,11 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
                 if(!strcmp(ip->ip, query->ip)) {
                     addrlen = snprintf(addrbuf, sizeof(addrbuf)-1,
                         "tcp://%s:%d", ip->ip, (int)top->default_port);
-                    MP_CHECK(ctx, &mp, mp_start_array(&mp, 2));
+                    MP_CHECK(ctx, &mp, mp_start_array(&mp, 3));
                     MP_CHECK(ctx, &mp, mp_put_int(&mp, ep->connect));
                     MP_CHECK(ctx, &mp, mp_put_string(&mp, addrbuf, addrlen));
+                    MP_CHECK(ctx, &mp,
+                        put_endpoint_options(ctx, &mp, top->default_options));
                     break;
                 }
             }
