@@ -32,6 +32,7 @@ struct role {
 struct topology {
     struct roleht roles;
     int default_port;
+    struct cfg_sockopts *default_options;
 };
 
 struct graph {

@@ -43,6 +43,31 @@ __types__:
       bus: 5
       survey: 6
 
+  sockopts: !Struct
+    ? __set_flags__
+    linger: !Int
+      min: 0
+      max: 86400000
+      description: The socket linger timeout in milliseconds (NN_LINGER
+        nanomsg option)
+    sndbuf: !Int
+      min: 0
+      max: 1Ti
+      description: Size of send buffer (NN_SNDBUF option)
+    rcvbuf: !Int
+      min: 0
+      max: 1Ti
+      description: Size of recv buffer (NN_RCVBUF option)
+    reconnect-interval: !Int
+      min: 1
+      max: 86400000
+      description: Reconnection interval (NN_RECONNECT_IVL option)
+    reconnect-interval-max: !Int
+      min: 1
+      max: 86400000
+      description: Max reconnection interval for exponential backoff
+        (NN_RECONNECT_IVL_MAX option)
+
   intern: !Struct
     type: !Type topology_type
     layout: !String
@@ -51,6 +76,10 @@ __types__:
       max: 65535
       description: Default port used for the topology, if not overriden by
         per-role, or per-connection basis.
+    default-options: !Type
+      description: Default socket options set on all endpoints in this topology
+        unless overriden on per-socket, per-connection or per-endpoint basis.
+      type: sockopts
     ip-addresses: !Mapping
       description: List of ip addresses for the roles that bind on IP
       key-element: !String
@@ -67,7 +96,6 @@ __types__:
     choices:
       Extern: !Type extern
       Topology: !Type intern
-
 
 
 server:

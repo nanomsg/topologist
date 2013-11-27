@@ -152,6 +152,43 @@ static int query_parse(struct query_context *ctx, const char *q, int qlen)
     return query_url_parse(ctx, self, urlstart, urlend-urlstart);
 }
 
+static int put_socket_options(struct query_context *ctx, struct mp_buf *mb,
+    struct cfg_sockopts *options)
+{
+    int nopt = 0;
+    if(options->linger_set) nopt += 1;
+    if(options->rcvbuf_set) nopt += 1;
+    if(options->sndbuf_set) nopt += 1;
+    if(options->reconnect_interval_set) nopt += 1;
+    if(options->reconnect_interval_max_set) nopt += 1;
+
+    MP_CHECK(ctx, mb, mp_start_map(mb, nopt));
+    if(options->linger_set) {
+        MP_CHECK(ctx, mb, mp_put_string(mb, "NN_LINGER", strlen("NN_LINGER")));
+        MP_CHECK(ctx, mb, mp_put_int(mb, options->linger));
+    }
+    if(options->rcvbuf_set) {
+        MP_CHECK(ctx, mb, mp_put_string(mb, "NN_RCVBUF", strlen("NN_RCVBUF")));
+        MP_CHECK(ctx, mb, mp_put_int(mb, options->rcvbuf));
+    }
+    if(options->sndbuf_set) {
+        MP_CHECK(ctx, mb, mp_put_string(mb, "NN_SNDBUF", strlen("NN_SNDBUF")));
+        MP_CHECK(ctx, mb, mp_put_int(mb, options->sndbuf));
+    }
+    if(options->reconnect_interval_set) {
+        MP_CHECK(ctx, mb, mp_put_string(mb,
+            "NN_RECONNECT_INTERVAL", strlen("NN_RECONNECT_INTERVAL")));
+        MP_CHECK(ctx, mb, mp_put_int(mb, options->reconnect_interval));
+    }
+    if(options->reconnect_interval_max_set) {
+        MP_CHECK(ctx, mb, mp_put_string(mb,
+            "NN_RECONNECT_INTERVAL_MAX", strlen("NN_RECONNECT_INTERVAL_MAX")));
+        MP_CHECK(ctx, mb, mp_put_int(mb, options->reconnect_interval_max));
+    }
+
+    return 0;
+}
+
 static int rrules_resolve(struct query_context *ctx, struct query *query,
     struct topology *top,
     struct role_rules *rr, const char **result, int *resultlen)
@@ -165,8 +202,7 @@ static int rrules_resolve(struct query_context *ctx, struct query *query,
     MP_CHECK(ctx, &mp, mp_start_array(&mp, 4));
     MP_CHECK(ctx, &mp, mp_put_int(&mp, 1));
 
-    /*  TODO(tailhook) implement socket-level socket options  */
-    MP_CHECK(ctx, &mp, mp_start_map(&mp, 0));
+    MP_CHECK(ctx, &mp, put_socket_options(ctx, &mp, top->default_options));
 
     /*  The msgpack requires to know size of mapping in advance
      *  so we first calculate it. Keep in sync with the code below */

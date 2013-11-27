@@ -41,6 +41,7 @@ struct topology *infer_bidi_topology(
     if(!self)
         return NULL;
     self->default_port = def->port;
+    self->default_options = &def->default_options;
 
     struct cfg_a_str *conn;
     for(conn = layout->val; conn; conn = conn->next) {
