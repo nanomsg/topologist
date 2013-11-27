@@ -67,6 +67,22 @@ __types__:
       max: 86400000
       description: Max reconnection interval for exponential backoff
         (NN_RECONNECT_IVL_MAX option)
+    keepalive: !Bool
+      description: Enable keepalive (NN_KEEPALIVE option)
+    tcp-keepidle: !Int
+      min: 1
+      max: 86400
+      description: Delay before sending first keepalive (NN_TCP_KEEPIDLE
+        option)
+    tcp-keepcnt: !Int
+      min: 1
+      max: 1000
+      description: Number of probes before dropping connection (NN_TCP_KEEPCNT
+        option)
+    tcp-keepintvl: !Int
+      min: 1
+      max: 86400
+      description: Delay between keepalive probes (NN_TCP_KEEPINTVL option)
 
   intern: !Struct
     type: !Type topology_type

@@ -161,6 +161,10 @@ static int put_socket_options(struct query_context *ctx, struct mp_buf *mb,
     if(options->sndbuf_set) nopt += 1;
     if(options->reconnect_interval_set) nopt += 1;
     if(options->reconnect_interval_max_set) nopt += 1;
+    if(options->keepalive) nopt += 1;
+    if(options->tcp_keepidle) nopt += 1;
+    if(options->tcp_keepcnt) nopt += 1;
+    if(options->tcp_keepintvl) nopt += 1;
 
     MP_CHECK(ctx, mb, mp_start_map(mb, nopt));
     if(options->linger_set) {
@@ -184,6 +188,26 @@ static int put_socket_options(struct query_context *ctx, struct mp_buf *mb,
         MP_CHECK(ctx, mb, mp_put_string(mb,
             "NN_RECONNECT_INTERVAL_MAX", strlen("NN_RECONNECT_INTERVAL_MAX")));
         MP_CHECK(ctx, mb, mp_put_int(mb, options->reconnect_interval_max));
+    }
+    if(options->keepalive_set) {
+        MP_CHECK(ctx, mb, mp_put_string(mb,
+            "NN_KEEPALIVE", strlen("NN_KEEPALIVE")));
+        MP_CHECK(ctx, mb, mp_put_int(mb, options->keepalive));
+    }
+    if(options->tcp_keepidle_set) {
+        MP_CHECK(ctx, mb, mp_put_string(mb,
+            "NN_TCP_KEEPIDLE", strlen("NN_TCP_KEEPIDLE")));
+        MP_CHECK(ctx, mb, mp_put_int(mb, options->tcp_keepidle));
+    }
+    if(options->tcp_keepcnt_set) {
+        MP_CHECK(ctx, mb, mp_put_string(mb,
+            "NN_TCP_KEEPCNT", strlen("NN_TCP_KEEPCNT")));
+        MP_CHECK(ctx, mb, mp_put_int(mb, options->tcp_keepcnt));
+    }
+    if(options->tcp_keepintvl_set) {
+        MP_CHECK(ctx, mb, mp_put_string(mb,
+            "NN_TCP_KEEPINTVL", strlen("NN_TCP_KEEPINTVL")));
+        MP_CHECK(ctx, mb, mp_put_int(mb, options->tcp_keepintvl));
     }
 
     return 0;
